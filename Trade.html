@@ -1,0 +1,340 @@
+﻿<include file="./Tpl/Home/Header.html"/>
+<link href="/Public/Home/trade.css" rel="stylesheet" type="text/css">
+<div class="marketArea clear">
+	<include file="./Tpl/Home/Left.html"/>
+	<div class="rightArea">
+		<div class="buysellTitle">
+            <div class="right-top">
+				<div class="r-top-l"></div>
+				<div class="r-top-r">
+                	<div class="left-b">
+                        <div class="r-t">
+                            <ul>
+                                <li class="c1">可用人民币：<span>￥{$auth.rmb|default=0}</span></li>
+								<li class="c1">可用{$unit}：<span>฿{$auth.xnb|default=0}</span></li>
+								<li class="c1">冻结人民币：<span>￥{$auth.rmb_frozen|default=0}</span></li>
+								<li class="c1">冻结{$unit}：<span>฿{$auth.xnb_frozen|default=0}</span></li>
+                                <div style="clear:both"></div> 
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="clear:both;"></div>
+				</div>
+				<div style="clear:both"></div>  
+			</div>
+				
+			<div class="selecttab1">
+				<ul class="selecttab-box1">
+					<li class="tab cur" id="buytab">
+					<a href="javascript:void(0);" class="buyBtcLtc">买入{$unit}</a>
+					</li>
+					<li class="tab" id="selltab">
+					<a href="javascript:void(0);" class="sellBtcLtc tab">卖出{$unit}</a>
+					</li>
+					<li class="refresh">
+						<div class="div1">
+							<span>刷新时间 : &nbsp;</span> <select id="updateSecond">
+								<option value="1">1s</option>
+								<option value="2">2s</option>
+								<option value="3">3s</option>
+								<option value="5">5s</option>
+								<option value="10">10s</option>
+								<option value="30">30s</option>
+								<option value="60">60s</option>
+							</select>
+						</div>
+						<div class="div2">
+							<span style="">倒计时 :&nbsp;</span> <span id="secondNumber">3</span><span>&nbsp;S</span>
+						</div>
+					</li>
+				</ul>
+		    </div>
+		</div>
+		<div>
+			<div class="coinBox buybtc">
+				<div class="coinBoxBody buybtcbody">
+					<span id="modifyResultTips" class="fred"></span>
+					<div class="freetitle">
+					</div>
+					<div id="buydiv" style="display: block;">
+						<div class="moneynumtext1"><span>人民币余额 : </span><span class="moneynum lightgreen5"> {$auth.rmb|default=0}&nbsp;&nbsp;&nbsp;<a href="{$path}/Fill"><span class="finbutton">&nbsp;</span></a></span></div>
+						<div class="moneynumtext2"><span>可买{$unit}: </span><span class="moneynum lightgreen5">{$best.buynum|default=0}</span></div>
+					</div>
+					<div id="selldiv" style="display: none;">
+						<div class="moneynumtext1"><span>{$unit}余额 : </span><span class="moneynum fred"> {$balance|default=0}</span></div>
+						<div class="moneynumtext3"><span>可卖人民币: </span><span class="moneynum fred">{$best.sellrmb|default=0}</span></div>
+					</div>
+					<div class="buytext">
+						<span class="buyprice">出价￥/{$unit}: </span>
+						<span class="buynum"><span class="lightgreen5 fontsize-16" id="numname">买入数量</span></span>
+						<span class="summoney">总金额</span>
+					</div>
+					<div class="buyinput">
+						<span class="buyinputprice">
+						    <input class="buysellinput" id="price" value="{$best.buy|default=0}"/>
+						</span>
+						<span class="buyinputnum"><input class="buysellinput" id="num"/></span>
+						<span class="inputsummoney"><input class="buysellinput" id="total" type="text" disabled="disabled"/></span>
+						<span class="chen"></span>
+						<span class="equal"></span>
+					</div>
+					<div id="btcFeeTips" class="fred btcFeeTips"></div>
+					<div class="tranpass">交易费用 : <input class="buysellinput" id="fee" type="text" disabled="disabled"/></div>
+					<div class="tranpass" style="padding-top:5px;">交易密码 : <input class="buysellinput" id="paypwd" type="password"/> <a href="{$path}/User/lostpwd">忘记密码？</a></div>
+					<div id="tradeBtcTips" class="fred center tradeBtcTips"></div>
+					<div class="submitorder"><a class="buttonGreen" id="subbtn">立即买入</a></div>
+				</div>
+			</div>
+			<script language="javascript">
+			$('document').ready(function(){
+				var url = '{$path}/Orders/buy';
+				var type = '{$type}';
+				if(type=='0'){
+					$('.tab').removeClass('cur');
+					$('#selltab').addClass('cur');
+					$('#buydiv').hide();
+					$('#selldiv').show();
+					$('#subbtn').text('立即卖出');
+					$('#numname').text('卖出数量');
+					url = '{$path}/Orders/sell';
+				}else{
+					$('.tab').removeClass('cur');
+					$('#buytab').addClass('cur');
+				    $('#buydiv').show();
+					$('#selldiv').hide();
+					$('#numname').text('买入数量');
+					$('#subbtn').text('立即买入');
+					url = '{$path}/Orders/buy';
+				}
+                
+				$('.tab').click(function(){
+                    $('.tab').removeClass('cur');
+					$(this).addClass('cur');
+				    if($(this).attr('id')=='buytab'){
+					    $('#buydiv').show();
+						$('#selldiv').hide();
+						$('#numname').text('买入数量');
+						$('#subbtn').text('立即买入');
+						url = '{$path}/Orders/buy';
+					}else if($(this).attr('id')=='selltab'){
+					    $('#buydiv').hide();
+						$('#selldiv').show();
+						$('#subbtn').text('立即卖出');
+						$('#numname').text('卖出数量');
+						url = '{$path}/Orders/sell';
+					}
+				});
+
+			    $('#price,#num').bind('keyup change',function(){
+				    var price = parseFloat($('#price').val());
+					var num = parseFloat($('#num').val()>0?$('#num').val():0);
+					var total = price * num;
+					var tradefee = '{$sys.tradefee|default=0}';
+
+					if(url=='{$path}/Orders/sell'){
+					    var fee = total * parseFloat(tradefee) / 100;
+					}else{
+					    var fee = num * parseFloat(tradefee) / 100;
+					}
+
+                    if(price!= null && price.toString().split('.')[1].length>3){
+					    $('#price').val(price.toFixed(3));
+					}else{
+					    $('#price').val(price);
+					}
+
+                    if(num!= null && num.toString().split(".")!=null && num.toString().split(".")[1] != null && num.toString().split('.')[1].length>4){
+					    $('#num').val(num.toFixed(4));
+					}else{
+					    $('#num').val(num);
+					}
+
+					if(total!= null && total.toString().split(".")!=null && total.toString().split(".")[1] != null && total.toString().split('.')[1].length>2){
+					    $('#total').val(total.toFixed(2));
+					}else{
+					    $('#total').val(total);
+					}
+
+					if(fee!= null && fee.toString().split(".")!=null && fee.toString().split(".")[1] != null && fee.toString().split('.')[1].length>2){
+					    $('#fee').val(fee.toFixed(2));
+					}else{
+					    $('#fee').val(fee);
+					}
+				});
+                                
+				$('#subbtn').click(function(){
+
+					var begin = '{$sys.ks|default=0}';
+					if(begin=='0'){
+					    alert('现在是{$sys.kgname}认购期，暂时还不能交易！');
+						return false;
+					}
+
+					var coin = '{$coin}';
+
+					if($('#price').val()==''||$('#price').val()<=0){
+					    $('#tradeBtcTips').text('请输入价格');
+						$('#price').focus();
+						return;
+					}else if($('#num').val()==''||$('#num').val()<=0){
+					    $('#tradeBtcTips').text('请输入数量');
+						$('#num').focus();
+						return;
+					}else if($('#paypwd').val()==''){
+					    $('#tradeBtcTips').text('请输入交易密码');
+						$('#paypwd').focus();
+						return;
+					}
+					$.post(url,{price:$('#price').val(),num:$('#num').val(),coin:coin,paypwd:$('#paypwd').val()},function(d){
+						if(d.status==0){
+						    alert(d.info);
+							location.href='{$path}/Trade/index/coin/{$coin}/type/'+d.data;
+						}else{
+						    alert(d.info);
+						}
+					},'json');
+				});
+			});
+			</script>
+			<div class="boxmargin"></div>
+			<div id="coinBoxbuybtc">
+			<div class="coinBox buyonesellone">
+				<div class="coinBoxBody buybtcbody2">
+					<ul class="orderlist">
+						<li style="height:31px;">
+							<span style="float:left;padding-left:15px;">
+								 <span class="black bold fontsize">最新成交价:</span>
+								 <span class="lightorange1 fontsize">￥{$last|default=0}</span>
+							</span>
+							<span style="float:right;padding-right:35px;"><a href="{$path}/Market">更多&gt;&gt;</a></span>
+						</li>
+						<li class="borderbtm black"><span class="height-40 c1 fontsize">买卖</span><span class="height-40 c2 fontsize">价格</span><span class="height-40 c3 fontsize">委单量</span></li>
+					</ul>
+					<ul class="orderlist" id="lis">
+					    <volist name="orders.sell" id="vo" key="k">
+						<li class="red"><span class="c1 height-35">卖 ({$k})</span><span class="c2 height-35">{$vo.price}</span><span class="c3 height-35">฿{$vo.num}</span></li>
+						</volist>
+						<volist name="orders.buy" id="vo" key="k">							
+						<li class="lightgreen5"><span class="c1 height-35">买 ({$k})</span><span class="c2 height-35">{$vo.price}</span><span class="c3 height-35">฿{$vo.num}</span></li>
+						</volist>
+					</ul>
+				</div>
+			</div>
+			</div>
+		</div>
+		<script language="javascript">
+		$(document).ready(function(){
+			
+			var coin = '{$coin}';
+			var go = null;
+
+            var wait = second =  $('#secondNumber').text();
+			go = setInterval(function(){
+				$('#secondNumber').text(wait);
+				wait--;
+				if(wait<0){
+					$.post('{$path}/Trade/entrust',{coin:coin},function(d){
+						$('#lis').html(d.data);
+					},'json');
+					wait=second;
+				}
+			},30000);
+
+            $('#updateSecond').change(function(){
+				clearInterval(go);
+			    wait = second =  $(this).val();
+				go = setInterval(function(){
+					$('#secondNumber').text(wait);
+					wait--;
+					if(wait<0){
+						$.post('{$path}/Trade/entrust',{coin:coin},function(d){
+							$('#lis').html(d.data);
+						},'json');
+						wait=second;
+					}
+				},30000);
+			});
+		});
+		</script>
+		<div id="entrustInfo">
+			<div class="entrustTen lasttenorder clear">
+				<div class="Tentitle">
+					<div class="buysellTitle" style="margin-bottom:0px;">
+						<ul class="selecttab-box1">
+							<li class="cur logs" name="wt">
+								<a class="buyBtcLtc" href="javascript:void(0);">最近10笔委托</a>
+							</li>
+							<li class="logs" name="jl">
+								<a class="sellBtcLtc" href="javascript:void(0);">最近10笔成交记录</a>
+							</li>
+							<li style="float:right;">
+								<a href="{$path}/Trade/buys" title="更多" class="fontsize-12" style="color:#1478c8;">更多&gt;&gt;</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="Tenbody" id="wt">
+							<table>
+								<tbody>
+									<tr>
+										<th width="130">委托时间</th>
+										<th width="70">委托类别</th>
+										<th width="80">委托数量</th>
+										<th width="80">委托金额</th>
+										<th width="80">手续费</th>
+										<th width="80">委托价格</th>
+										<th width="80">成交数量</th>
+										<th width="80">成交金额</th>
+										<th width="75">操作</th>
+									</tr>
+									
+									<volist name="orders.entrust" id="vo" empty="$empty">
+									<tr><td>{$vo.ctime|date="Y-m-d H:i:s",###}</td><td><eq name="vo.type" value="1">买<else/>卖</eq></td><td>{$vo.num}</td><td>{$vo.total}</td><td>{$vo.fee}</td><td>{$vo.price}</td><td>{$vo.deal}</td><td>{$vo.dealtotal}</td><td><eq name="vo.status" value="0"><a class="cancel" id="{$vo.id}">撤销委托</a><else/>已完成</eq></td></tr>
+									</volist>
+								</tbody>
+							</table>
+				</div>
+				<div class="Tenbody" id="jl" style="display:none">
+							<table>
+								<tbody>
+									<tr>
+										<th width="130">交易时间</th>
+										<th width="100">交易类别</th>
+										<th width="130">交易数量</th>
+										<th width="130">交易金额</th>
+										<th width="130">手续费</th>
+										<th width="130">交易价格</th>
+									</tr>
+									
+									<volist name="orders.trade" id="vo" empty="$empty">
+									<tr><td>{$vo.ctime|date="Y-m-d H:i:s",###}</td><td><eq name="vo.type" value="1">买<else/>卖</eq></td><td>{$vo.num}</td><td>{$vo.total}</td><td>{$vo.fee}</td><td>{$vo.price}</td></tr>
+									</volist>
+								</tbody>
+							</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="/Public/Home/trade.js"></script>
+<include file="./Tpl/Home/Footer.html" />
+<script language="javascript">
+$(document).ready(function(){
+	$('.logs').click(function(){
+	    $('.logs').removeClass('cur');
+		$(this).addClass('cur');
+		$('.Tenbody').hide();
+		$('#'+$(this).attr('name')).show();
+	});
+    $('.cancel').click(function(){
+	    var id = $(this).attr('id');
+		var coin = '{$coin}';
+		$.post('{$path}/Orders/cancel',{id:id,coin:coin},function(d){
+			alert(d.info);
+			if(d.status==0){
+			    location.reload();
+			}
+		});
+	});
+});
+</script>
